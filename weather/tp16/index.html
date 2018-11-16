@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="jquery-3.2.1.min.js"></script>
+    <script src="highcharts.js"></script>
+     <script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+        <script src="https://img.hcharts.cn/highcharts/highcharts-more.js"></script>
+        <script src="https://img.hcharts.cn/highcharts/modules/exporting.js"></script>
+        <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+</head>
+<body>
+    <center>
+        <table>
+            <form action="">
+                <tr>
+                    <td>城市</td>
+                    <td><input type="text" name="city"><span></span></td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="查询"></td>
+                </tr>
+            </form>
+        </table>
+        <div id="container"></div>
+    </center>
+</body>
+</html>
+<script>
+var city,data;
+    $(document).ready(function(){
+        //验证文本框
+        $("input[name=city]").on('blur',function(){
+            var city=$(this).val();
+            if (city=='') 
+            {
+                $(this).next().text('不能为空');
+            }
+            if (city.length>30)
+            {
+                $(this).next().text('字符长度不得超过30');
+            }
+            var city_preg=/^[A-Za-z0-9\u4e00-\u9fa5]+$/i;
+            if (!city_preg.test(city)) 
+            {
+                $(this).next().text('输入的字符只能是数字，字母，汉字');
+            }
+            return true;
+        })
+        //查询
+        $("input[type=button]").on('click',function(){
+            var city=$("input[name=city]").val();
+            $.ajax({
+                url:'weather.php',
+                type:'post',
+                data:{city:city},
+                dataType:'json',
+                success:function(data)
+                {
+
+                    weather(data);
+                }
+            })
+        })
+    }) 
+    function weather(da)
+    {
+        console.log(da.wea);
+        var long=da.wea;
+        var  option={
+                chart: {
+                    type: 'columnrange', // columnrange 依赖 highcharts-more.js
+                    inverted: true
+                },
+                title: {
+                    text: '每月温度变化范围'
+                },
+                subtitle: {
+                    text: '2009 挪威某地'
+                },
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    title: {
+                        text: '温度 ( °C )'
+                    }
+                },
+                tooltip: {
+                    valueSuffix: '°C'
+                },
+                plotOptions: {
+                    columnrange: {
+                        dataLabels: {
+                            enabled: true,
+                            formatter: function () {
+                                return this.y + '°C';
+                            }
+                        }
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                series: [{
+                    name: '温度',
+                    data: [
+                        [-9.7, 9.4],
+                        [-8.7, 6.5],
+                        [-3.5, 9.4],
+                        [-1.4, 19.9],
+                        [0.0, 22.6],
+                        [2.9, 29.5],
+                        [9.2, 30.7],
+                        [7.3, 26.5],
+                        [4.4, 18.0],
+                        [-3.1, 11.4],
+                        [-5.2, 10.4],
+                        [-13.5, 9.8]
+                    ]
+                }]
+            };
+            option.xAxis.categories=long;
+           option.series[0].data=da.temp;
+ var chart = Highcharts.chart('container',option );
+    }
+      
+</script>
